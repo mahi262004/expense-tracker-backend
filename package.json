@@ -1,0 +1,24 @@
+{
+  "name": "expense-tracker-backend",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/mahi262004/expense-tracker-backend#readme",
+  "bugs": {
+    "url": "https://github.com/mahi262004/expense-tracker-backend/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mahi262004/expense-tracker-backend.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "mongoose": "^9.6.2"
+  }
+}
