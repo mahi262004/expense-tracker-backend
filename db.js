@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-
+import mongoose from "mongoose";
+import "dotenv/config";
 await mongoose.connect(process.env.MONGO_URI);
 const userSchema = new mongoose.Schema({
   username: {
@@ -61,8 +61,5 @@ const User = mongoose.model("user", userSchema);
 const Tags = mongoose.model("tags", tagsSchema);
 const Transactions = mongoose.model("transactions", transactionsSchema);
 
-module.exports = {
-  User,
-  Transactions,
-  Tags,
-};
+export { User, Transactions, Tags };
+
