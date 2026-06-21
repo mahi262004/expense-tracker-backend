@@ -1,65 +1,38 @@
 import mongoose from "mongoose";
 import "dotenv/config";
+
 await mongoose.connect(process.env.MONGO_URI);
+
 const userSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: true,
-    minLength: 4,
-    maxLength: 25,
-  },
-  password: {
-    type: String,
-    required: true,
-    minLength: 3,
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
-});
-
-const transactionsSchema = new mongoose.Schema({
-  transactionName: {
-    type: String,
-    required: true,
-  },
-  tag: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "tags",
-    required: true,
-  },
-  value: {
-    type: Number,
-    required: true,
-  },
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
-    required: true,
-  },
-
-  type: {
-    type: String,
-    required: true,
-  },
-  date: {
-    type: Date,
-    required: true,
-  },
+  username: { type: String, required: true, minLength: 4, maxLength: 25 },
+  password: { type: String, required: true, minLength: 3 },
+  email:    { type: String, required: true, unique: true },
 });
 
 const tagsSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-  },
+  name:   { type: String, required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
 });
 
-const User = mongoose.model("user", userSchema);
-const Tags = mongoose.model("tags", tagsSchema);
+const transactionsSchema = new mongoose.Schema({
+  transactionName: { type: String, required: true },
+  tag:    { type: mongoose.Schema.Types.ObjectId, ref: "tags", required: true },
+  value:  { type: Number, required: true },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
+  type:   { type: String, enum: ["income", "expense"], required: true },
+  date:   { type: Date, required: true },
+}, { timestamps: true });
+
+const budgetSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
+  tag:    { type: mongoose.Schema.Types.ObjectId, ref: "tags", required: true },
+  amount: { type: Number, required: true, min: 0 },
+  month:  { type: Date, required: true },
+}, { timestamps: true });
+
+const User         = mongoose.model("user", userSchema);
+const Tags         = mongoose.model("tags", tagsSchema);
 const Transactions = mongoose.model("transactions", transactionsSchema);
+const Budget       = mongoose.model("budget", budgetSchema);
 
-export { User, Transactions, Tags };
-
+export { User, Transactions, Tags, Budget };
