@@ -4,7 +4,6 @@ import cors from "cors";
 import bcrypt from "bcrypt";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-import mongoSanitize from "express-mongo-sanitize";
 import { User, Transactions, Tags, Budget } from "./db.js";
 import {
   signupSchema,
@@ -32,9 +31,9 @@ app.use(
   })
 );
 app.use(express.json({ limit: "10kb" }));
-app.use(mongoSanitize());
 
-
+// General rate limit across all routes — generous enough for normal use,
+// but stops a script from hammering the API.
 const generalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 300,
@@ -44,7 +43,8 @@ const generalLimiter = rateLimit({
 });
 app.use(generalLimiter);
 
-
+// Tighter limit specifically for signup/signin — guards against
+// password-guessing and fake-account spam.
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -53,7 +53,7 @@ const authLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-
+// ── Auth middleware ───────────────────────────────────────
 const authMiddleware = (req, res, next) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) return res.status(401).json({ message: "No token provided" });
@@ -66,7 +66,7 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-
+// ── Auth routes ───────────────────────────────────────────
 app.post("/signup", authLimiter, validate(signupSchema), async (req, res) => {
   try {
     const exists = await User.findOne({ email: req.body.email });
@@ -116,7 +116,7 @@ app.post("/signin", authLimiter, validate(signinSchema), async (req, res) => {
   }
 });
 
-
+// ── Transaction routes ─────────────────────────────────────
 app.get("/transactions", authMiddleware, async (req, res) => {
   try {
     const transactions = await Transactions.find({
@@ -181,7 +181,7 @@ app.delete("/transactions/:id", authMiddleware, async (req, res) => {
   }
 });
 
-
+// ── Tags routes ────────────────────────────────────────────
 app.get("/tags", authMiddleware, async (req, res) => {
   try {
     const tags = await Tags.find({ userId: req.userId });
@@ -232,7 +232,7 @@ app.delete("/tags/:id", authMiddleware, async (req, res) => {
   }
 });
 
-
+// ── Budget routes ──────────────────────────────────────────
 app.get("/budgets", authMiddleware, async (req, res) => {
   try {
     const budgets = await Budget.find({ userId: req.userId }).populate(
