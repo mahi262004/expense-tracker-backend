@@ -1,38 +1,71 @@
 import mongoose from "mongoose";
 import "dotenv/config";
 
+if (!process.env.MONGO_URI) {
+  console.error(
+    "Missing MONGO_URI in environment variables. Check your .env file."
+  );
+  process.exit(1);
+}
+
 await mongoose.connect(process.env.MONGO_URI);
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, minLength: 4, maxLength: 25 },
-  password: { type: String, required: true, minLength: 3 },
-  email:    { type: String, required: true, unique: true },
+  password: { type: String, required: true, minLength: 6, select: false },
+  email: { type: String, required: true, unique: true },
 });
 
 const tagsSchema = new mongoose.Schema({
-  name:   { type: String, required: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
+  name: { type: String, required: true },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
+    required: true,
+  },
 });
 
-const transactionsSchema = new mongoose.Schema({
-  transactionName: { type: String, required: true },
-  tag:    { type: mongoose.Schema.Types.ObjectId, ref: "tags", required: true },
-  value:  { type: Number, required: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
-  type:   { type: String, enum: ["income", "expense"], required: true },
-  date:   { type: Date, required: true },
-}, { timestamps: true });
+const transactionsSchema = new mongoose.Schema(
+  {
+    transactionName: { type: String, required: true },
+    tag: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "tags",
+      required: true,
+    },
+    value: { type: Number, required: true },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
+    type: { type: String, enum: ["income", "expense"], required: true },
+    date: { type: Date, required: true },
+  },
+  { timestamps: true }
+);
 
-const budgetSchema = new mongoose.Schema({
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: "user", required: true },
-  tag:    { type: mongoose.Schema.Types.ObjectId, ref: "tags", required: true },
-  amount: { type: Number, required: true, min: 0 },
-  month:  { type: Date, required: true },
-}, { timestamps: true });
+const budgetSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: true,
+    },
+    tag: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "tags",
+      required: true,
+    },
+    amount: { type: Number, required: true, min: 0 },
+    month: { type: Date, required: true },
+  },
+  { timestamps: true }
+);
 
-const User         = mongoose.model("user", userSchema);
-const Tags         = mongoose.model("tags", tagsSchema);
+const User = mongoose.model("user", userSchema);
+const Tags = mongoose.model("tags", tagsSchema);
 const Transactions = mongoose.model("transactions", transactionsSchema);
-const Budget       = mongoose.model("budget", budgetSchema);
+const Budget = mongoose.model("budget", budgetSchema);
 
 export { User, Transactions, Tags, Budget };
